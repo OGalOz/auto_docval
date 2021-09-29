@@ -1,0 +1,33 @@
+
+
+The most important user supplied document in this
+module is the 'varspec.json' file - a file which
+explains the info for every variable that is
+used as an argument for any function. It
+is important that each of the components in
+the varspec.json "types" key has the key
+"name", "subtype", and "desc". Those are 
+all used to create docstrings among other
+things, like verifying a config dict.
+If it is a dict, it must have one of the
+following keys: 'dict_keys', 'dict_spec',
+or 'unknown'. 
+'dict_keys' is a dict
+with the keys in the variable (which
+is a dict) and they map to the name 
+of the variable type to which the
+key in the actual object points to.
+'dict_spec' is a dict
+with only a single key and single value,
+in which the single key represents all
+the possible keys in this dict, for example
+this could be a dict in which each key is
+a barcode of length 20, so the barcode of
+length 20 should be defined as its own variable
+with restrictions, and then what it points
+to is again an object that is defined earlier
+in the variable specification.
+'unknown' means this dict is variable and
+it's better not to list what is inside it.
+
+

@@ -1,0 +1,137 @@
+{
+    "types": [
+        {
+            "name": "types_cfg_json_fp",
+            "subtype": "string",
+            "restrictions": {"is_file": 1},
+            "desc": "Path to all type spec file."
+        },
+        {   
+            "name": "python_file_fp",
+            "subtype": "string",
+            "restrictions": {"is_file": 1},
+            "desc": "Path to python file to document."
+        },
+        {
+            "name": "dict_keys_d",
+            "subtype": "dict",
+            "dict_spec": {"dict_key": "string"},
+            "desc": "The definition for the dict that holds dict keys"
+        },
+        {
+            "name": "restrictions_d",
+            "subtype": "dict",
+            "dict_keys": {},
+            "optional_keys": {
+                "regex": "string",
+                "less_than": "float",
+                "greater_than": "float",
+                "decimal_max": "int"
+            },
+            "desc": "The dict that holds restrictions for various objects."
+        },
+        {
+            "name": "var",
+            "subtype": "string",
+            "desc": "Name of a variable"
+        },
+        {
+            "name": "spec_d",
+            "subtype": "dict",
+            "dict_keys": {
+                "subtype": "string",
+                "desc": "string"
+            },
+            "optional_keys": {
+                    "dict_keys": "dict_keys_d",
+                    "optional_keys": "dict_keys_d",
+                    "dict_spec": "dict_keys_d",
+                    "restrictions": "restrictions_d"
+            },
+            "desc": "The dict that holds the information about a single variable."
+        },
+        {
+            "name": "type_spec_d",
+            "subtype": "dict",
+            "dict_spec": {"var": "spec_d"},
+            "desc": "The dict that holds the information about all the variables."
+        },
+        {"name": "func_name",
+        "subtype": "string",
+        "desc": "Name of function, no spaces and doesn't start with number"
+        },
+        {"name": "func_string",
+        "subtype": "string",
+        "desc": "multiline string of function"
+        },
+        {"name": "start_end_d",
+        "subtype": "dict",
+        "dict_keys": {"func_start": "int",
+                     "func_end": "int"},
+        "desc": "Dict mapping function names to definition's start and end line within file"
+        },
+        {"name": "func_names_to_starts_and_ends",
+        "subtype": "dict",
+        "dict_spec": {"func_name": "start_end_d"},
+        "desc": "Dict mapping function names to definition's start and end line within file"
+        },
+        {
+         "name": "op_file_str_lines",
+         "subtype": "list<string>",
+         "desc": "Output file in format list of strings, one string per line, no new-line symbol."
+        },
+        {
+            "name": "dict_key",
+            "subtype": "string",
+            "desc": "A key for a dict to add to doc str"
+        },
+        {
+         "name": "num_depth",
+         "subtype": "int",
+         "desc": "Multiplier for spacers to show proper depth of variable"
+        },
+        {
+         "name": "spacer",
+         "subtype": "string",
+         "desc": "Spaces which mark indentation level for doc strings"
+        },
+        {
+        "name": "current_num_layer",
+         "subtype": "int",
+         "desc": "Keeping track of the layer in which we are operating for doc strings"
+        },
+        {
+        "name": "max_num_layers",
+         "subtype": "int",
+         "desc": "Upper limit to the layers in which we are operating for doc strings"
+        },
+        {
+        "name": "docstr_l",
+         "subtype": "pass",
+         "desc": "Passing type for infinite recursion reasons, this is a list with subtype list or string."
+        },
+        {
+            "name": "docstrs_major_l",
+            "subtype": "list<docstr_l>",
+            "desc": "Outer list of layers of docstrings in sublists."
+        },
+        {
+            "name": "var2docstr_d",
+            "subtype": "dict",
+            "dict_spec": {"var": "docstrs_major_l"},
+            "desc": "Dict mapping variables to their docstrings"
+        },
+        {
+            "name": "funcN2vars",
+            "subtype": "dict",
+            "dict_spec": {"func_name": "list<var>"}, 
+            "desc": "Dict mapping function name to a list of variables in def"
+        },
+        {
+            "name": "funcN2vars2docstr",
+            "subtype": "dict",
+            "dict_spec": {"func_name": "var2docstr_d"},
+            "desc": "Dict mapping function name to variables mapped to doc strings."
+        }
+    ]
+}

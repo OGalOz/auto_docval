@@ -1,0 +1,14 @@
+Add types to doc_val_varspec.json
+to give an example of how to run
+this program to update documentation.
+
+Define return syntax:
+    Perhaps add 
+    '# rets {X}'
+    above the function definition line,
+    then {X} is defined by having variable
+    names, separated by ORs; also possible
+    to have tuple<var, var, var>, or
+    tuple<var OR var, var>. Need to make
+    decision on how it works.
+
