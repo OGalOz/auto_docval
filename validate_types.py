@@ -146,7 +146,7 @@ def validate_atomic_type(subtype_str, obj, obj_name, obj_type_def):
 
 
 def check_string_restrictions(obj, restrictions_d, obj_name):
-    possible_restrictions = ["regex", "is_file", "is_dir", "op_file"]
+    possible_restrictions = ["regex", "is_file", "is_dir", "op_file", "one_of"]
     for x in restrictions_d.keys():
         if x not in possible_restrictions:
             raise Exception(f"key {x} not recognized as restriction for strings.")
@@ -165,6 +165,14 @@ def check_string_restrictions(obj, restrictions_d, obj_name):
     if "op_file" in restrictions_d:
         if not os.path.isdir(os.path.dirname(obj)):
             raise Exception("Expecting existing dir at loc " + os.path.dirname(obj))
+    if "one_of" in restrictions_d:
+        one_of_list = restrictions_d["one_of"]
+        if not isinstance(one_of_list, list):
+            raise Exception("If defining a restricted vocabulary using " + \
+                            "'one_of', the value for 'one_of' must be a list.")
+        if obj not in one_of_list:
+            raise Exception(f"Obj {obj} not in one_of_list: '" + \
+                            "', '".join(one_of_list) + "'.")
 
 
 def check_float_restrictions(obj, restrictions_d, obj_name):
