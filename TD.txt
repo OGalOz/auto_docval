@@ -12,3 +12,7 @@ Define return syntax:
     tuple<var OR var, var>. Need to make
     decision on how it works.
 
+
+
+Arguably add language option - Javascript syntax optional
+as well.

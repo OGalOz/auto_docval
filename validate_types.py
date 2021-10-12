@@ -52,8 +52,7 @@ def check_object_against_types(obj_name, obj, type_spec_d):
             # A few options: (dict_keys) or (dict_spec) or (unknown)
             if "dict_keys" in obj_type_def:
                 dict_keys_d = obj_type_def["dict_keys"]
-                for key_name, new_obj_name in dict_keys_list.items():
-                    key_name, new_obj_name = dict_key_tuple
+                for key_name, new_obj_name in dict_keys_d.items():
                     if key_name not in obj:
                         raise Exception(f"Object {obj_name} missing key: {key_name}")
                     check_object_against_types(new_obj_name,
