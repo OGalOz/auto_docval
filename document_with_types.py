@@ -135,7 +135,8 @@ def create_documentation_args_returns_str(funcN2vars,
 
 # rets crt_var_list 
 def prepare_docstrs_l(var, type_spec_d, current_num_layer, 
-                      max_num_layers=4, dict_key=None, list_bool=False):
+                      max_num_layers=4, dict_key=None, list_bool=False,
+                      sub_var_str_bool=False, optional_key_bool=False):
     """
     *DOCDONE
     Args:
@@ -183,8 +184,8 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
     # "" represents don't print another doc string
     if max_num_layers != -1 and current_num_layer > max_num_layers:
         return ""
-    #if var in ["string", "int", "float", "skip", "bool", "None"]:
-    #    return ""
+    if var in ["pass", "None"]:
+        return ""
 
     if var not in type_spec_d:
         raise Exception(f"var {var} missing from type_spec_d")
@@ -197,7 +198,13 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
     crt_var_list = []
     
     st = crt_spec_d["subtype"]
+
+
     if dict_key is not None:
+        
+        if optional_key_bool:
+            dict_key = "[" + dict_key + "]"
+
         if not list_bool:
             this_var_doc_str = f"'{dict_key}' -> {var} ({st}), {crt_spec_d['desc']}"
         else:
@@ -205,10 +212,13 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
     else:
         if not list_bool:
             this_var_doc_str = f"{var} ({st}): {crt_spec_d['desc']}"
+            if sub_var_str_bool:
+                this_var_doc_str = "( " + this_var_doc_str + " )"
         else:
             this_var_doc_str = f"{var} (list<{st}>): {crt_spec_d['desc']}"
     crt_var_list.append(this_var_doc_str)
-    
+
+
     if st in ["string", "int", "float", "skip", "bool"]:
         if "restrictions" in crt_spec_d:
             r_d = crt_spec_d["restrictions"]
@@ -225,7 +235,8 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
         '''
         if "dict_keys" in crt_spec_d:
             n_substr = f"-{var} keys:" if dict_key is not None and list_bool else "-keys:"
-            crt_var_list.append(n_substr)
+            if len(crt_spec_d["dict_keys"].keys()) > 0:
+                crt_var_list.append(n_substr)
             for k, v in crt_spec_d["dict_keys"].items():
                 if not check_var_against_type_spec_d(v, type_spec_d):
                     raise Exception(f"Dict keys value {v} not in type_spec_d.")
@@ -238,11 +249,30 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
                                                     current_num_layer + 1, dict_key=k,
                                                     list_bool=True,
                                                     max_num_layers=max_num_layers))
+            if "optional_keys" in crt_spec_d:
+                crt_var_list.append(copy.deepcopy(layer_2))
+                layer_2 = []
+                crt_var_list.append("-optional keys:")
+                for k, v in crt_spec_d["optional_keys"].items():
+                    print("*"*10)
+                    print(k)
+                    print(v)
+                    if not check_var_against_type_spec_d(v, type_spec_d):
+                        raise Exception(f"Dict keys value {v} not in type_spec_d.")
+                    if "list<" not in v:
+                        layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1, dict_key=k,
+                                                        max_num_layers=max_num_layers, optional_key_bool=True))
+                    else:
+                        list_subtype = (v.split("<")[1]).split(">")[0]
+                        layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, 
+                                                        current_num_layer + 1, dict_key=k,
+                                                        list_bool=True,
+                                                        max_num_layers=max_num_layers, optional_key_bool=True))
 
         elif "dict_spec" in crt_spec_d:
             k = list(crt_spec_d["dict_spec"].keys())[0]
             v = crt_spec_d["dict_spec"][k]
-            crt_var_list.append(f" maps {k} -> {v}")
+            crt_var_list.append(f"-maps {k} -> {v}")
             if not check_var_against_type_spec_d(k, type_spec_d):
                 raise Exception(f"Dict spec key {k} not in type_spec_d.")
             if not check_var_against_type_spec_d(v, type_spec_d):
@@ -270,6 +300,10 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
         layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, 
                        current_num_layer + 1, max_num_layers=max_num_layers))
         crt_var_list.append(layer_2)
+    else:
+        crt_var_list.append(prepare_docstrs_l(st, type_spec_d, 
+                    current_num_layer + 1, max_num_layers=max_num_layers,
+                    sub_var_str_bool=True))
 
     logging.debug("For variable {var}, docstrings list is: ")
     logging.debug(crt_var_list)
@@ -565,12 +599,13 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
             if x != "":
                 op_file_str_lines.append(spacer*num_depth + x)
         elif isinstance(x, list):
-            if isinstance(x[0], list):
-                generate_docstr_from_docstr_l(x, spacer, num_depth, op_file_str_lines)
-            elif isinstance(x[0], str):
-                generate_docstr_from_docstr_l(x, spacer, num_depth + 1, op_file_str_lines)
-            else:
-                raise Exception("Cannot recognize subtype of docstr!")
+            if len(x) > 0:
+                if isinstance(x[0], list):
+                    generate_docstr_from_docstr_l(x, spacer, num_depth, op_file_str_lines)
+                elif isinstance(x[0], str):
+                    generate_docstr_from_docstr_l(x, spacer, num_depth + 1, op_file_str_lines)
+                else:
+                    raise Exception("Cannot recognize subtype of docstr!")
 
 
 

@@ -7,6 +7,12 @@
             "desc": "Path to all type spec file."
         },
         {
+            "name": "input_cfg_json_fp",
+            "subtype": "string",
+            "restrictions": {"is_file": 1},
+            "desc": "Path to input config dict"
+        },
+        {
             "name": "list_bool",
             "subtype": "bool",
             "desc": "Whether or not the current variable is wrapped in a list."
@@ -23,9 +29,20 @@
             "desc": "String describing what the type of a variable is."
         },
         {
+            "name": "sub_var_str_bool",
+            "subtype": "bool",
+            "desc": "Whether subtype of variable maps to another variable."
+
+        },
+        {
             "name": "desc",
             "subtype": "string",
             "desc": "String describing a variable's meaning."
+        },
+        {
+            "name": "optional_key_bool",
+            "subtype": "bool",
+            "desc": "Whether or not the current variable is an optional key"
         },
         {
             "name": "dict_keys_d",
@@ -51,6 +68,21 @@
             "desc": "Name of a variable"
         },
         {
+            "name": "subtype_str",
+            "subtype": "var",
+            "desc": "Another name for variable"
+        },
+        {
+            "name": "obj",
+            "subtype": "pass",
+            "desc": "Unknown Object."
+        },
+        {
+            "name": "obj_name",
+            "subtype": "var",
+            "desc": "Name of a variable"
+        },
+        {
             "name": "spec_d",
             "subtype": "dict",
             "dict_keys": {
@@ -64,6 +96,11 @@
                     "restrictions": "restrictions_d"
             },
             "desc": "The dict that holds the information about a single variable."
+        },
+        {
+            "name": "obj_spec_d",
+            "subtype": "spec_d",
+            "desc": "Spec d for an object"
         },
         {
             "name": "type_spec_d",
@@ -121,6 +158,11 @@
         },
         {
         "name": "crt_var_list",
+         "subtype": "pass",
+         "desc": "Non-fixed data structure."
+        },
+        {
+        "name": "cfg_d",
          "subtype": "pass",
          "desc": "Non-fixed data structure."
         },

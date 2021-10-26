@@ -11,13 +11,35 @@ import copy
 
 def check_cfg_d(cfg_d, type_spec_d):
     """
+    *DOCDONE
     Args:
-        cfg_d (d): The configuration dict to check
-        keys_list (list<str>): A list of dict keys
-        type_spec_d (d): The dict containing all specs
-    Description:
-        A central function of this file - this checks if a filled-in
-        configuration object has the correct inputs
+        cfg_d (pass): Non-fixed data structure.
+        type_spec_d (dict): The dict that holds the information about all the variables.
+        -maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
+            -optional keys:
+                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
+                -optional keys:
+                    '[regex]' -> string (string), standard python string
+                    '[less_than]' -> float (float), standard python float
+                    '[greater_than]' -> float (float), standard python float
+                    '[decimal_max]' -> int (int), standard python int
     """
     keys_list = list(cfg_d.keys())
     for key in keys_list:
@@ -25,33 +47,59 @@ def check_cfg_d(cfg_d, type_spec_d):
 
 def check_object_against_types(obj_name, obj, type_spec_d):
     """
+    *DOCDONE
     Args:
-        obj_name (str): Name of object, should be in type_spec_d
-        obj (?): Unknown object
-        type_spec_d (d): The type_spec_d, object_names -> spec_d
-                    spec_d (d):
+        obj_name (var): Name of a variable
+            ( var (string): Name of a variable )
+        obj (pass): Unknown Object.
+        type_spec_d (dict): The dict that holds the information about all the variables.
+        -maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
+            -optional keys:
+                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
+                -optional keys:
+                    '[regex]' -> string (string), standard python string
+                    '[less_than]' -> float (float), standard python float
+                    '[greater_than]' -> float (float), standard python float
+                    '[decimal_max]' -> int (int), standard python int
     """
     logging.debug(f"Checking object {obj_name} against type_spec_d")
     if obj_name not in type_spec_d:
         raise Exception(f"Object name {obj_name} not found in type_spec_d")
-    # obj_type_def is a dict
-    obj_type_def = type_spec_d[obj_name]
-    if "subtype" not in obj_type_def:
+    # obj_spec_d is a dict
+    obj_spec_d = type_spec_d[obj_name]
+    if "subtype" not in obj_spec_d:
         raise Exception("subtype must be included in type's info")
 
-    obj_subtype = obj_type_def["subtype"]
+    obj_subtype = obj_spec_d["subtype"]
 
     atomic_types = ["float", "string", "int", "bool", "pass"]
     if obj_subtype in atomic_types:
-        validate_atomic_type(obj_type_def["subtype"], obj, obj_name, obj_type_def)
+        validate_atomic_type(obj_spec_d["subtype"], obj, obj_name, obj_spec_d)
     else:
         if obj_subtype == "dict":
             if not isinstance(obj, dict):
                 raise Exception(f"Object {obj_name} thought to be dict " + \
                                 "is not, instead is " + str(type(obj)))
             # A few options: (dict_keys) or (dict_spec) or (unknown)
-            if "dict_keys" in obj_type_def:
-                dict_keys_d = obj_type_def["dict_keys"]
+            if "dict_keys" in obj_spec_d:
+                dict_keys_d = obj_spec_d["dict_keys"]
                 for key_name, new_obj_name in dict_keys_d.items():
                     if key_name not in obj:
                         raise Exception(f"Object {obj_name} missing key: {key_name}")
@@ -59,18 +107,18 @@ def check_object_against_types(obj_name, obj, type_spec_d):
                                                obj[key_name],
                                                type_spec_d)
                 # There could also be optional keys if it's dict_keys
-                if "optional_keys" in obj_type_def:
-                    optional_keys_d = obj_type_def["optional_keys"]
+                if "optional_keys" in obj_spec_d:
+                    optional_keys_d = obj_spec_d["optional_keys"]
                     for key_name, new_obj_name in optional_keys_d.items():
                         if key_name in obj:
                             check_object_against_types(new_obj_name,
                                                        obj[key_name],
                                                        type_spec_d)
 
-            elif "dict_spec" in obj_type_def:
+            elif "dict_spec" in obj_spec_d:
                 # Check for each key of obj
                 # Single key mapped to single value
-                spec_d = obj_type_def["dict_spec"]
+                spec_d = obj_spec_d["dict_spec"]
                 if len(spec_d.keys()) != 1:
                     raise Exception("dict_spec needs to have one key and one value.")
                 key_obj_name = list(spec_d.keys())[0]
@@ -82,7 +130,7 @@ def check_object_against_types(obj_name, obj, type_spec_d):
                     check_object_against_types(value_obj_name,
                                                obj[k],
                                                type_spec_d)
-            elif "unknown" in obj_type_def:
+            elif "unknown" in obj_spec_d:
                 pass
             else:
                 raise Exception("dict object definitions must have either " + \
@@ -110,29 +158,55 @@ def check_object_against_types(obj_name, obj, type_spec_d):
 
 
 
-def validate_atomic_type(subtype_str, obj, obj_name, obj_type_def):
+def validate_atomic_type(subtype_str, obj, obj_name, obj_spec_d):
     """
+    *DOCDONE
     Args:
-        subtype_str (str): Name of atomic subtype, in ["float", "string", "int", "bool", "pass"]
-        obj (?)
-        obj_name (str): Name of type
-        obj_type_def (d): Dict containing info regarding object's type
+        subtype_str (var): Another name for variable
+            ( var (string): Name of a variable )
+        obj (pass): Unknown Object.
+        obj_name (var): Name of a variable
+            ( var (string): Name of a variable )
+        obj_spec_d (spec_d): Spec d for an object
+            ( spec_d (dict): The dict that holds the information about a single variable. )
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
+            -optional keys:
+                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
+                -optional keys:
+                    '[regex]' -> string (string), standard python string
+                    '[less_than]' -> float (float), standard python float
+                    '[greater_than]' -> float (float), standard python float
+                    '[decimal_max]' -> int (int), standard python int
     """
     if subtype_str == "string":
         if not isinstance(obj, str):
             raise Exception(f"String object not string: {obj_name}, instead: " + str(type(obj)))
-        if "restrictions" in obj_type_def:
-            check_string_restrictions(obj, obj_type_def["restrictions"], obj_name)
+        if "restrictions" in obj_spec_d:
+            check_string_restrictions(obj, obj_spec_d["restrictions"], obj_name)
     elif subtype_str == "float":
         if not isinstance(obj, float):
             raise Exception(f"Float object not float: {obj_name}, instead: " + str(type(obj)))
-        if "restrictions" in obj_type_def:
-            check_float_restrictions(obj, obj_type_def["restrictions"], obj_name)
+        if "restrictions" in obj_spec_d:
+            check_float_restrictions(obj, obj_spec_d["restrictions"], obj_name)
     elif subtype_str == "int":
         if not isinstance(obj, int):
             raise Exception(f"Int object not int: {obj_name}, instead: " + str(type(obj)))
-        if "restrictions" in obj_type_def:
-            check_int_restrictions(obj, obj_type_def["restrictions"], obj_name)
+        if "restrictions" in obj_spec_d:
+            check_int_restrictions(obj, obj_spec_d["restrictions"], obj_name)
     elif subtype_str == "bool":
         if not isinstance(obj, bool):
             raise Exception(f"Int object not int: {obj_name}, instead: " + str(type(obj)))
@@ -145,6 +219,19 @@ def validate_atomic_type(subtype_str, obj, obj_name, obj_type_def):
 
 
 def check_string_restrictions(obj, restrictions_d, obj_name):
+    """
+    *DOCDONE
+    Args:
+        obj (pass): Unknown Object.
+        restrictions_d (dict): The dict that holds restrictions for various objects.
+        -optional keys:
+            '[regex]' -> string (string), standard python string
+            '[less_than]' -> float (float), standard python float
+            '[greater_than]' -> float (float), standard python float
+            '[decimal_max]' -> int (int), standard python int
+        obj_name (var): Name of a variable
+            ( var (string): Name of a variable )
+    """
     possible_restrictions = ["regex", "is_file", "is_dir", "op_file", "one_of"]
     for x in restrictions_d.keys():
         if x not in possible_restrictions:
@@ -175,6 +262,19 @@ def check_string_restrictions(obj, restrictions_d, obj_name):
 
 
 def check_float_restrictions(obj, restrictions_d, obj_name):
+    """
+    *DOCDONE
+    Args:
+        obj (pass): Unknown Object.
+        restrictions_d (dict): The dict that holds restrictions for various objects.
+        -optional keys:
+            '[regex]' -> string (string), standard python string
+            '[less_than]' -> float (float), standard python float
+            '[greater_than]' -> float (float), standard python float
+            '[decimal_max]' -> int (int), standard python int
+        obj_name (var): Name of a variable
+            ( var (string): Name of a variable )
+    """
     possible_restrictions = ["decimal_max", "less_than", "greater_than"]
     for x in restrictions_d.keys():
         if x not in possible_restrictions:
@@ -196,6 +296,19 @@ def check_float_restrictions(obj, restrictions_d, obj_name):
 
 
 def check_int_restrictions(obj, restrictions_d, obj_name):
+    """
+    *DOCDONE
+    Args:
+        obj (pass): Unknown Object.
+        restrictions_d (dict): The dict that holds restrictions for various objects.
+        -optional keys:
+            '[regex]' -> string (string), standard python string
+            '[less_than]' -> float (float), standard python float
+            '[greater_than]' -> float (float), standard python float
+            '[decimal_max]' -> int (int), standard python int
+        obj_name (var): Name of a variable
+            ( var (string): Name of a variable )
+    """
     possible_restrictions = ["less_than", "greater_than"]
     for x in restrictions_d.keys():
         if x not in possible_restrictions:
@@ -209,28 +322,52 @@ def check_int_restrictions(obj, restrictions_d, obj_name):
         if obj > min_val:
             raise Exception(f"{obj} is greater than min value {min_val}.")
 
+# rets type_spec_d
 def import_all_types(types_cfg_json_fp):
     """
+    *DOCDONE
     Args:
-        types_cfg_json_fp (str): Path to types JSON;
-                                 the types JSON must
-                                 follow a specific format
-                                 defined elsewhere.
+        types_cfg_json_fp (string): Path to all type spec file.
+            Restriction: is_file=1
     Returns:
-        type_spec_d (d): Dict mapping type to
-                        describing dict
+        type_spec_d (dict): The dict that holds the information about all the variables.
+        -maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
+            -optional keys:
+                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
+                -optional keys:
+                    '[regex]' -> string (string), standard python string
+                    '[less_than]' -> float (float), standard python float
+                    '[greater_than]' -> float (float), standard python float
+                    '[decimal_max]' -> int (int), standard python int
     """
 
-    types_cfg_d = load_cfg_d(types_cfg_json_fp)
-    types_list = types_cfg_d["types"]
+    type_spec_d = load_cfg_d(types_cfg_json_fp)
+    types_list = type_spec_d["types"]
     type_spec_d = {
             "dict": {"subtype": "dict", "desc": "standard python dict"},
             "float": {"subtype": "float", "desc": "standard python float"},
             "string": {"subtype": "string", "desc": "standard python string"},
             "bool": {"subtype": "bool", "desc": "standard python bool"},
             "int": {"subtype": "int", "desc": "standard python int"},
-            "pass": {"subtype": "int", "desc": "Ignoring description."},
-            "None": {"subtype": "None", "desc": "None type"}
+            "None": {"subtype": "None", "desc": "None type"},
+            "pass": {"subtype": "None", "desc": "Ignoring description."}
         }
     for type_info_d in types_list:
         type_name = type_info_d["name"]
@@ -247,24 +384,57 @@ def import_all_types(types_cfg_json_fp):
     return type_spec_d
 
 
+# rets type_spec_d 
 def load_cfg_d(types_cfg_json_fp):
     """
+    *DOCDONE
     Args:
-        types_cfg_json_fp (str): Path to types JSON;
-                                 the types JSON must
-                                 follow a specific format
-                                 defined elsewhere.
+        types_cfg_json_fp (string): Path to all type spec file.
+            Restriction: is_file=1
+    Returns:
+        type_spec_d (dict): The dict that holds the information about all the variables.
+        -maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
+            -optional keys:
+                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
+                -maps dict_key -> string
+                    dict_key (string): A key for a dict to add to doc str
+                    string (string): standard python string
+                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
+                -optional keys:
+                    '[regex]' -> string (string), standard python string
+                    '[less_than]' -> float (float), standard python float
+                    '[greater_than]' -> float (float), standard python float
+                    '[decimal_max]' -> int (int), standard python int
     """
 
-    types_cfg_d = json.loads(open(types_cfg_json_fp).read())
-    if "types" not in types_cfg_d:
+    type_spec_d = json.loads(open(types_cfg_json_fp).read())
+    if "types" not in type_spec_d:
         raise Exception("Types specification config dict must contain key 'types'")
 
-    return types_cfg_d
+    return type_spec_d
 
 
 def test_2(types_cfg_json_fp, input_cfg_json_fp):
     """
+    *DOCDONE
+    Args:
+        types_cfg_json_fp (string): Path to all type spec file.
+            Restriction: is_file=1
+        input_cfg_json_fp (string): Path to input config dict
+            Restriction: is_file=1
     """
     logging.basicConfig(level=logging.DEBUG)
     type_spec_d = import_all_types(types_cfg_json_fp)
@@ -272,6 +442,12 @@ def test_2(types_cfg_json_fp, input_cfg_json_fp):
     check_cfg_d(cfg_d, type_spec_d)
 
 def test_1(types_cfg_json_fp):
+    """
+    *DOCDONE
+    Args:
+        types_cfg_json_fp (string): Path to all type spec file.
+            Restriction: is_file=1
+    """
     type_spec_d = import_all_types(types_cfg_json_fp)
     print(type_spec_d)
 
