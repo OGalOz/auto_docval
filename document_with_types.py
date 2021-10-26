@@ -576,7 +576,7 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
 
 
         
-def test_1(types_cfg_json_fp, python_file_fp):
+def test_3(types_cfg_json_fp, python_file_fp):
     """
     *DOCDONE
     Args:
@@ -598,7 +598,7 @@ def test_2(python_file_fp):
     """
     get_functions_info_from_file(python_file_fp)
     
-def test_3(types_cfg_json_fp, python_file_fp):
+def test_1(types_cfg_json_fp, python_file_fp):
     """
     *DOCDONE
     Args:
