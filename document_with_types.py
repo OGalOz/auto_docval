@@ -43,11 +43,14 @@ def get_func_name_to_vars_from_file(python_file_fp):
             Restriction: is_file=1
     Returns:
         funcN2vars (dict): Dict mapping function name to a dict holding variables
-            func_name -> argsNret_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                argsNret_d (dict): Dict mapping 'args' and 'returns' to a list of variables in def
-                        Args -> var (string), Name of a variable
-                        Returns -> var (string), Name of a variable
+         maps func_name -> argsNret_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
+            -keys:
+                'Args' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
+                'Returns' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
     """
     func_name_to_locs = get_function_names_starts_and_ends(python_file_fp)
     #print(function_names_to_starts_and_ends)
@@ -63,33 +66,43 @@ def create_documentation_args_returns_str(funcN2vars,
     *DOCDONE
     Args:
         funcN2vars (dict): Dict mapping function name to a dict holding variables
-            func_name -> argsNret_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                argsNret_d (dict): Dict mapping 'args' and 'returns' to a list of variables in def
-                        Args -> var (string), Name of a variable
-                        Returns -> var (string), Name of a variable
+         maps func_name -> argsNret_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
+            -keys:
+                'Args' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
+                'Returns' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
         type_spec_d (dict): The dict that holds the information about all the variables.
-            var -> spec_d
-                var (string): Name of a variable
-                spec_d (dict): The dict that holds the information about a single variable.
+         maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
         types_cfg_json_fp (string): Path to all type spec file.
             Restriction: is_file=1
     Returns:
         funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.
-            func_name -> var2docstr_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                var2docstr_d (dict): Dict mapping variables to their docstrings
-                    var -> docstrs_major_l
-                        var (string): Name of a variable
-                        docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
+         maps func_name -> var2docstr_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            var2docstr_d (dict): Dict mapping variables to their docstrings
+             maps var -> docstrs_major_l
+                var (string): Name of a variable
+                docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
+                    docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string.
     """
     """
+    Description:
+        
     """
 
     funcN2vars2docstr_l = {}
     for func_name, argsNret_d in funcN2vars.items():
         exchange_d = {}
         for x in ["Args", "Returns"]:
+            # func_vars is a 'variables_list'
             func_vars = argsNret_d[x]
             var2docstr_l = {}
             for var in func_vars:
@@ -104,11 +117,16 @@ def create_documentation_args_returns_str(funcN2vars,
                 if "desc" not in spec_d:
                     raise Exception(f"Variable {var} from function {func_name} " + \
                                     f" does not have key 'desc'.")
+                # Note, below function prepare_docstrs_l is a large recursive function
                 docstrs_l = prepare_docstrs_l(var, type_spec_d, 1)
                 var2docstr_l[var] = docstrs_l
             exchange_d[x] = var2docstr_l
 
         funcN2vars2docstr_l[func_name] = exchange_d 
+    
+    with open("samples/funcN2vars2docstr_l.json", "w") as g:
+        g.write(json.dumps(funcN2vars2docstr_l, indent=2))
+
     return funcN2vars2docstr_l 
 
 
@@ -117,23 +135,44 @@ def create_documentation_args_returns_str(funcN2vars,
 
 # rets crt_var_list 
 def prepare_docstrs_l(var, type_spec_d, current_num_layer, 
-                      max_num_layers=4, dict_key=None):
+                      max_num_layers=4, dict_key=None, list_bool=False):
     """
     *DOCDONE
     Args:
         var (string): Name of a variable
         type_spec_d (dict): The dict that holds the information about all the variables.
-            var -> spec_d
-                var (string): Name of a variable
-                spec_d (dict): The dict that holds the information about a single variable.
+         maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
         current_num_layer (int): Keeping track of the layer in which we are operating for doc strings
         max_num_layers (int): Upper limit to the layers in which we are operating for doc strings
         dict_key (string): A key for a dict to add to doc str
+        list_bool (bool): Whether or not the current variable is wrapped in a list.
     Returns:
         crt_var_list (pass): Non-fixed data structure.
     """
     """
     Description:
+        Each variable that is an input to a function (or an output from a function)
+        is funneled into this function. The name of the variable is the argument
+        'var', and the overall dict that contains all the variables is 
+        called 'type_spec_d'. 
+        In order to get information about this specific variable, we look into
+        the dict type_spec_d and pull out the corresponding dict that's associated
+        only with this variable.
+        If we are dealing with variables with a very large number of variables
+        nested inside it, then we could have a docstrings that runs too deep
+        to the right. In that case, we can add information to the function,
+        called 'max_num_layers' to block it from going too far down the 
+        rabbit hole of nested variables. The first time this function 
+        is applied to an input variable, the 'current_num_layer' argument
+        is given the value 1.
+
+
+        the argument 'type_spec_d'
         This recursive function returns either a string or a list,
             depending on the layer number
         # Note, if max_num_layers = -1, then there is no limit to layers.
@@ -142,21 +181,33 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
     logging.debug(f"Preparing docstrings list for variable {var}. Layer: {current_num_layer}.")
 
     # "" represents don't print another doc string
-    if max_num_layers != -1 and current_num_layer >= max_num_layers:
+    if max_num_layers != -1 and current_num_layer > max_num_layers:
         return ""
     #if var in ["string", "int", "float", "skip", "bool", "None"]:
     #    return ""
 
     if var not in type_spec_d:
         raise Exception(f"var {var} missing from type_spec_d")
+
+    # Note that crt_spec_d is a dict with keys 
+    # 'subtype', 'desc', and possibly 'dict_keys', 'dict_spec', etc.
     crt_spec_d = type_spec_d[var]
+
+    # Below is the return object
+    crt_var_list = []
     
     st = crt_spec_d["subtype"]
     if dict_key is not None:
-        this_var_doc_str = f"{dict_key} -> {var} ({st}), {crt_spec_d['desc']}"
+        if not list_bool:
+            this_var_doc_str = f"'{dict_key}' -> {var} ({st}), {crt_spec_d['desc']}"
+        else:
+            this_var_doc_str = f"'{dict_key}' -> list<{var}> (list<{st}>). {var} desc: {crt_spec_d['desc']}"
     else:
-        this_var_doc_str = f"{var} ({st}): {crt_spec_d['desc']}"
-    crt_var_list = [this_var_doc_str]
+        if not list_bool:
+            this_var_doc_str = f"{var} ({st}): {crt_spec_d['desc']}"
+        else:
+            this_var_doc_str = f"{var} (list<{st}>): {crt_spec_d['desc']}"
+    crt_var_list.append(this_var_doc_str)
     
     if st in ["string", "int", "float", "skip", "bool"]:
         if "restrictions" in crt_spec_d:
@@ -168,60 +219,77 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
         return crt_var_list
     elif st == "dict":
         layer_2 = []
+        '''
+        if dict_key is not None and list_bool:
+            crt_var_list.append(prepare_docstrs_l(var, type_spec_d, 1, max_num_layers = 1))
+        '''
         if "dict_keys" in crt_spec_d:
+            n_substr = f"-{var} keys:" if dict_key is not None and list_bool else "-keys:"
+            crt_var_list.append(n_substr)
             for k, v in crt_spec_d["dict_keys"].items():
                 if not check_var_against_type_spec_d(v, type_spec_d):
                     raise Exception(f"Dict keys value {v} not in type_spec_d.")
                 if "list<" not in v:
-                    layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1, dict_key=k))
+                    layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1, dict_key=k,
+                                                    max_num_layers=max_num_layers))
                 else:
                     list_subtype = (v.split("<")[1]).split(">")[0]
-                    layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, current_num_layer + 1, dict_key=k))
+                    layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, 
+                                                    current_num_layer + 1, dict_key=k,
+                                                    list_bool=True,
+                                                    max_num_layers=max_num_layers))
 
         elif "dict_spec" in crt_spec_d:
             k = list(crt_spec_d["dict_spec"].keys())[0]
             v = crt_spec_d["dict_spec"][k]
+            crt_var_list.append(f" maps {k} -> {v}")
             if not check_var_against_type_spec_d(k, type_spec_d):
                 raise Exception(f"Dict spec key {k} not in type_spec_d.")
             if not check_var_against_type_spec_d(v, type_spec_d):
                 raise Exception(f"Dict spec value {v} not in type_spec_d.")
-            layer_2.append(f"{k} -> {v}")
-            layer_2.append(prepare_docstrs_l(k, type_spec_d, current_num_layer+1))
+            layer_2.append(prepare_docstrs_l(k, type_spec_d, current_num_layer+1, max_num_layers=max_num_layers))
             if "list" not in v:
-                layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1))
+                layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1, max_num_layers=max_num_layers))
             else:
                 list_subtype = (v.split("<")[1]).split(">")[0]
-                layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, current_num_layer + 1))
+                layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, 
+                               current_num_layer + 1, list_bool=True, 
+                               max_num_layers=max_num_layers))
         elif "unknown" in crt_spec_d:
-            layer_2.append(f"Unknown keys (variable input).")
+            layer_2.append(f"No strict keys (variable input).")
         else:
             raise Exception("No recognized keys in dict spec_d. "  + \
                             "Must be one of 'dict_keys', 'dict_spec', 'unknown'." + \
                             " Existing keys " + ', '.join(crt_spec_d.keys()))
         crt_var_list.append(layer_2)
-    elif "list" in st:
+    elif "list<" in st:
         layer_2 = []
         list_subtype = (st.split("<")[1]).split(">")[0]
         if not check_var_against_type_spec_d(list_subtype, type_spec_d):
             raise Exception(f"List subtype {list_subtype} not in type_spec_d.")
-        layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, current_num_layer + 1))
+        layer_2.append(prepare_docstrs_l(list_subtype, type_spec_d, 
+                       current_num_layer + 1, max_num_layers=max_num_layers))
         crt_var_list.append(layer_2)
 
     logging.debug("For variable {var}, docstrings list is: ")
     logging.debug(crt_var_list)
     return crt_var_list
 
-
+# rets bool
 def check_var_against_type_spec_d(var, type_spec_d):
     """
     *DOCDONE
     Args:
         var (string): Name of a variable
         type_spec_d (dict): The dict that holds the information about all the variables.
-            var -> spec_d
-                var (string): Name of a variable
-                spec_d (dict): The dict that holds the information about a single variable.
+         maps var -> spec_d
+            var (string): Name of a variable
+            spec_d (dict): The dict that holds the information about a single variable.
+            -keys:
+                'subtype' -> subtype (string), String describing what the type of a variable is.
+                'desc' -> desc (string), String describing a variable's meaning.
     Returns:
+        bool (bool): standard python bool
     """
     # Returns True if good, False if bad
     if "list<" not in var:
@@ -245,18 +313,24 @@ def get_func_name_to_variables(func_name_to_locs, python_file_fp):
     *DOCDONE
     Args:
         func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file
-            func_name -> start_end_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                start_end_d (dict): Dict mapping function names to definition's start and end line within file
+         maps func_name -> start_end_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            start_end_d (dict): Dict mapping function names to definition's start and end line within file
+            -keys:
+                'func_start' -> int (int), standard python int
+                'func_end' -> int (int), standard python int
         python_file_fp (string): Path to python file to document.
             Restriction: is_file=1
     Returns:
         funcN2vars (dict): Dict mapping function name to a dict holding variables
-            func_name -> argsNret_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                argsNret_d (dict): Dict mapping 'args' and 'returns' to a list of variables in def
-                        Args -> var (string), Name of a variable
-                        Returns -> var (string), Name of a variable
+         maps func_name -> argsNret_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
+            -keys:
+                'Args' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
+                'Returns' -> variables_list (list<var>), list of variables normally returned.
+                    var (string): Name of a variable
     """
     """
     Description:
@@ -298,7 +372,7 @@ def get_function_return_variables(func_ret_str):
         func_ret_str (string): String defining what a function returns within this system.
     Returns:
         variables_list (list<var>): list of variables normally returned.
-                var (string): Name of a variable
+            var (string): Name of a variable
     """
     """
     Desc:
@@ -323,7 +397,7 @@ def get_function_variables_from_func_string(func_string):
         func_string (string): multiline string of function
     Returns:
         variables_list (list<var>): list of variables normally returned.
-                var (string): Name of a variable
+            var (string): Name of a variable
     """
     variables_list = []
     variables_str = "".join(func_string.split("(")[1:])
@@ -347,9 +421,12 @@ def get_function_names_starts_and_ends(python_file_fp):
             Restriction: is_file=1
     Returns:
         func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file
-            func_name -> start_end_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                start_end_d (dict): Dict mapping function names to definition's start and end line within file
+         maps func_name -> start_end_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            start_end_d (dict): Dict mapping function names to definition's start and end line within file
+            -keys:
+                'func_start' -> int (int), standard python int
+                'func_end' -> int (int), standard python int
     """
 
     file_lines = open(python_file_fp).read().split("\n")
@@ -393,13 +470,15 @@ def add_docstrings_to_file(python_file_fp, funcN2vars2docstr):
         python_file_fp (string): Path to python file to document.
             Restriction: is_file=1
         funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.
-            func_name -> var2docstr_d
-                func_name (string): Name of function, no spaces and doesn't start with number
-                var2docstr_d (dict): Dict mapping variables to their docstrings
-                    var -> docstrs_major_l
-                        var (string): Name of a variable
-                        docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
+         maps func_name -> var2docstr_d
+            func_name (string): Name of function, no spaces and doesn't start with number
+            var2docstr_d (dict): Dict mapping variables to their docstrings
+             maps var -> docstrs_major_l
+                var (string): Name of a variable
+                docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
+                    docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string.
     Returns:
+        None (None): None type
     """
     """
     Desc:
@@ -443,12 +522,14 @@ def add_docstrings_to_file(python_file_fp, funcN2vars2docstr):
                 logging.debug(f"Working on var {var}.")
                 generate_docstr_from_docstr_l(var_docstrs_l, spacer,
                                                 2, op_file_str_lines)
-            op_file_str_lines.append(spacer + "Returns:")
+
             rets_d = vars_d["Returns"]
-            for var, var_docstrs_l in rets_d.items():
-                logging.debug(f"Working on var {var}.")
-                generate_docstr_from_docstr_l(var_docstrs_l, spacer,
-                                                2, op_file_str_lines)
+            if len(rets_d.keys()) > 0:
+                op_file_str_lines.append(spacer + "Returns:")
+                for var, var_docstrs_l in rets_d.items():
+                    logging.debug(f"Working on var {var}.")
+                    generate_docstr_from_docstr_l(var_docstrs_l, spacer,
+                                                    2, op_file_str_lines)
 
             op_file_str_lines.append(spacer + '"""')
             #logging.info(f"Function {func_name} found at line {i}.")
@@ -469,7 +550,7 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
         spacer (string): Spaces which mark indentation level for doc strings
         num_depth (int): Multiplier for spacers to show proper depth of variable
         op_file_str_lines (list<string>): Output file in format list of strings, one string per line, no new-line symbol.
-    Returns:
+            string (string): standard python string
     """
     # docstr_l is a list in which each item is either a string or a docstring list
     # Every time this runs, it adds a line to the op_file_str_lines list.
@@ -484,7 +565,12 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
             if x != "":
                 op_file_str_lines.append(spacer*num_depth + x)
         elif isinstance(x, list):
-            generate_docstr_from_docstr_l(x, spacer, num_depth + 1, op_file_str_lines)
+            if isinstance(x[0], list):
+                generate_docstr_from_docstr_l(x, spacer, num_depth, op_file_str_lines)
+            elif isinstance(x[0], str):
+                generate_docstr_from_docstr_l(x, spacer, num_depth + 1, op_file_str_lines)
+            else:
+                raise Exception("Cannot recognize subtype of docstr!")
 
 
 
@@ -498,13 +584,20 @@ def test_1(types_cfg_json_fp, python_file_fp):
             Restriction: is_file=1
         python_file_fp (string): Path to python file to document.
             Restriction: is_file=1
-    Returns:
     """
 
     type_spec_d = import_all_types(types_cfg_json_fp)
 
 
-
+def test_2(python_file_fp):
+    """
+    *DOCDONE
+    Args:
+        python_file_fp (string): Path to python file to document.
+            Restriction: is_file=1
+    """
+    get_functions_info_from_file(python_file_fp)
+    
 def test_3(types_cfg_json_fp, python_file_fp):
     """
     *DOCDONE
@@ -513,7 +606,6 @@ def test_3(types_cfg_json_fp, python_file_fp):
             Restriction: is_file=1
         python_file_fp (string): Path to python file to document.
             Restriction: is_file=1
-    Returns:
     """
     type_spec_d = import_all_types(types_cfg_json_fp)
     funcN2vars = get_func_name_to_vars_from_file(python_file_fp)
@@ -525,18 +617,6 @@ def test_3(types_cfg_json_fp, python_file_fp):
     #print(func_names_to_doc_strings)
 
 
-
-
-def test_2(python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    Returns:
-    """
-    get_functions_info_from_file(python_file_fp)
-    
 
 
 def main():

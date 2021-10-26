@@ -1,0 +1,37 @@
+{
+    "types": [
+        { "name": "a",
+            "subtype": "string",
+            "desc": "string holds nothing."
+        },
+        { "name": "var2_d",
+          "subtype": "dict",
+          "dict_keys": {
+              "a": "string",
+              "b": "int"
+          },
+          "desc": "sub dict to hold string vars."
+        },
+        { 
+          "name": "var3_d",
+          "subtype": "dict",
+          "dict_keys": {
+              "g": "list<a>",
+              "f": "list<var2_d>"
+          },
+          "desc": "sub dict to hold lists of string and dicts."
+        },
+        { "name": "var1_d",
+          "subtype": "dict",
+          "dict_keys": {
+              "var2_d": "var2_d",
+              "var3_d": "var3_d"
+          },
+          "desc": "dict that holds other dicts inside it."
+        }
+
+    ]
+
+
+}
+

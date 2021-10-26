@@ -1,0 +1,452 @@
+{
+  "get_func_name_to_vars_from_file": {
+    "Args": {
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {
+      "funcN2vars": [
+        "funcN2vars (dict): Dict mapping function name to a dict holding variables",
+        " maps func_name -> argsNret_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def",
+            "-keys:",
+            [
+              [
+                "'Args' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ],
+              [
+                "'Returns' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "create_documentation_args_returns_str": {
+    "Args": {
+      "funcN2vars": [
+        "funcN2vars (dict): Dict mapping function name to a dict holding variables",
+        " maps func_name -> argsNret_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def",
+            "-keys:",
+            [
+              [
+                "'Args' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ],
+              [
+                "'Returns' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ],
+      "type_spec_d": [
+        "type_spec_d (dict): The dict that holds the information about all the variables.",
+        " maps var -> spec_d",
+        [
+          [
+            "var (string): Name of a variable"
+          ],
+          [
+            "spec_d (dict): The dict that holds the information about a single variable.",
+            "-keys:",
+            [
+              [
+                "'subtype' -> subtype (string), String describing what the type of a variable is."
+              ],
+              [
+                "'desc' -> desc (string), String describing a variable's meaning."
+              ]
+            ]
+          ]
+        ]
+      ],
+      "types_cfg_json_fp": [
+        "types_cfg_json_fp (string): Path to all type spec file.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {
+      "funcN2vars2docstr": [
+        "funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.",
+        " maps func_name -> var2docstr_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "var2docstr_d (dict): Dict mapping variables to their docstrings",
+            " maps var -> docstrs_major_l",
+            [
+              [
+                "var (string): Name of a variable"
+              ],
+              [
+                "docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.",
+                [
+                  [
+                    "docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string."
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "prepare_docstrs_l": {
+    "Args": {
+      "var": [
+        "var (string): Name of a variable"
+      ],
+      "type_spec_d": [
+        "type_spec_d (dict): The dict that holds the information about all the variables.",
+        " maps var -> spec_d",
+        [
+          [
+            "var (string): Name of a variable"
+          ],
+          [
+            "spec_d (dict): The dict that holds the information about a single variable.",
+            "-keys:",
+            [
+              [
+                "'subtype' -> subtype (string), String describing what the type of a variable is."
+              ],
+              [
+                "'desc' -> desc (string), String describing a variable's meaning."
+              ]
+            ]
+          ]
+        ]
+      ],
+      "current_num_layer": [
+        "current_num_layer (int): Keeping track of the layer in which we are operating for doc strings"
+      ],
+      "max_num_layers": [
+        "max_num_layers (int): Upper limit to the layers in which we are operating for doc strings"
+      ],
+      "dict_key": [
+        "dict_key (string): A key for a dict to add to doc str"
+      ],
+      "list_bool": [
+        "list_bool (bool): Whether or not the current variable is wrapped in a list."
+      ]
+    },
+    "Returns": {
+      "crt_var_list": [
+        "crt_var_list (pass): Non-fixed data structure."
+      ]
+    }
+  },
+  "check_var_against_type_spec_d": {
+    "Args": {
+      "var": [
+        "var (string): Name of a variable"
+      ],
+      "type_spec_d": [
+        "type_spec_d (dict): The dict that holds the information about all the variables.",
+        " maps var -> spec_d",
+        [
+          [
+            "var (string): Name of a variable"
+          ],
+          [
+            "spec_d (dict): The dict that holds the information about a single variable.",
+            "-keys:",
+            [
+              [
+                "'subtype' -> subtype (string), String describing what the type of a variable is."
+              ],
+              [
+                "'desc' -> desc (string), String describing a variable's meaning."
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    "Returns": {
+      "bool": [
+        "bool (bool): standard python bool"
+      ]
+    }
+  },
+  "get_func_name_to_variables": {
+    "Args": {
+      "func_name_to_locs": [
+        "func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file",
+        " maps func_name -> start_end_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "start_end_d (dict): Dict mapping function names to definition's start and end line within file",
+            "-keys:",
+            [
+              [
+                "'func_start' -> int (int), standard python int"
+              ],
+              [
+                "'func_end' -> int (int), standard python int"
+              ]
+            ]
+          ]
+        ]
+      ],
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {
+      "funcN2vars": [
+        "funcN2vars (dict): Dict mapping function name to a dict holding variables",
+        " maps func_name -> argsNret_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def",
+            "-keys:",
+            [
+              [
+                "'Args' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ],
+              [
+                "'Returns' -> variables_list (list<var>), list of variables normally returned.",
+                [
+                  [
+                    "var (string): Name of a variable"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "get_function_return_variables": {
+    "Args": {
+      "func_ret_str": [
+        "func_ret_str (string): String defining what a function returns within this system."
+      ]
+    },
+    "Returns": {
+      "variables_list": [
+        "variables_list (list<var>): list of variables normally returned.",
+        [
+          [
+            "var (string): Name of a variable"
+          ]
+        ]
+      ]
+    }
+  },
+  "get_function_variables_from_func_string": {
+    "Args": {
+      "func_string": [
+        "func_string (string): multiline string of function"
+      ]
+    },
+    "Returns": {
+      "variables_list": [
+        "variables_list (list<var>): list of variables normally returned.",
+        [
+          [
+            "var (string): Name of a variable"
+          ]
+        ]
+      ]
+    }
+  },
+  "get_function_names_starts_and_ends": {
+    "Args": {
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {
+      "func_name_to_locs": [
+        "func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file",
+        " maps func_name -> start_end_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "start_end_d (dict): Dict mapping function names to definition's start and end line within file",
+            "-keys:",
+            [
+              [
+                "'func_start' -> int (int), standard python int"
+              ],
+              [
+                "'func_end' -> int (int), standard python int"
+              ]
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "add_docstrings_to_file": {
+    "Args": {
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ],
+      "funcN2vars2docstr": [
+        "funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.",
+        " maps func_name -> var2docstr_d",
+        [
+          [
+            "func_name (string): Name of function, no spaces and doesn't start with number"
+          ],
+          [
+            "var2docstr_d (dict): Dict mapping variables to their docstrings",
+            " maps var -> docstrs_major_l",
+            [
+              [
+                "var (string): Name of a variable"
+              ],
+              [
+                "docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.",
+                [
+                  [
+                    "docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string."
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    "Returns": {
+      "None": [
+        "None (None): None type"
+      ]
+    }
+  },
+  "generate_docstr_from_docstr_l": {
+    "Args": {
+      "docstr_l": [
+        "docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string."
+      ],
+      "spacer": [
+        "spacer (string): Spaces which mark indentation level for doc strings"
+      ],
+      "num_depth": [
+        "num_depth (int): Multiplier for spacers to show proper depth of variable"
+      ],
+      "op_file_str_lines": [
+        "op_file_str_lines (list<string>): Output file in format list of strings, one string per line, no new-line symbol.",
+        [
+          [
+            "string (string): standard python string"
+          ]
+        ]
+      ]
+    },
+    "Returns": {}
+  },
+  "test_1": {
+    "Args": {
+      "types_cfg_json_fp": [
+        "types_cfg_json_fp (string): Path to all type spec file.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ],
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {}
+  },
+  "test_2": {
+    "Args": {
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {}
+  },
+  "test_3": {
+    "Args": {
+      "types_cfg_json_fp": [
+        "types_cfg_json_fp (string): Path to all type spec file.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ],
+      "python_file_fp": [
+        "python_file_fp (string): Path to python file to document.",
+        [
+          "Restriction: is_file=1"
+        ]
+      ]
+    },
+    "Returns": {}
+  }
+}

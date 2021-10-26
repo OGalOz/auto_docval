@@ -6,6 +6,11 @@
             "restrictions": {"is_file": 1},
             "desc": "Path to all type spec file."
         },
+        {
+            "name": "list_bool",
+            "subtype": "bool",
+            "desc": "Whether or not the current variable is wrapped in a list."
+        },
         {   
             "name": "python_file_fp",
             "subtype": "string",
@@ -49,8 +54,8 @@
             "name": "spec_d",
             "subtype": "dict",
             "dict_keys": {
-                "subtype": "string",
-                "desc": "string"
+                "subtype": "subtype",
+                "desc": "desc"
             },
             "optional_keys": {
                     "dict_keys": "dict_keys_d",
@@ -152,7 +157,7 @@
                 "Args": "variables_list",
                 "Returns": "variables_list"
             },
-            "desc": "Dict mapping 'args' and 'returns' to a list of variables in def"
+            "desc": "Dict mapping 'Args' and 'Returns' to a list of variables in def"
         },
         {
             "name": "funcN2vars",
