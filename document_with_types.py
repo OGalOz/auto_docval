@@ -123,9 +123,11 @@ def create_documentation_args_returns_str(funcN2vars,
             exchange_d[x] = var2docstr_l
 
         funcN2vars2docstr_l[func_name] = exchange_d 
-    
+   
+    '''
     with open("samples/funcN2vars2docstr_l.json", "w") as g:
         g.write(json.dumps(funcN2vars2docstr_l, indent=2))
+    '''
 
     return funcN2vars2docstr_l 
 
