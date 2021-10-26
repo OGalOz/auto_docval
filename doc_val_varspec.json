@@ -13,6 +13,16 @@
             "desc": "Path to python file to document."
         },
         {
+            "name": "subtype",
+            "subtype": "string",
+            "desc": "String describing what the type of a variable is."
+        },
+        {
+            "name": "desc",
+            "subtype": "string",
+            "desc": "String describing a variable's meaning."
+        },
+        {
             "name": "dict_keys_d",
             "subtype": "dict",
             "dict_spec": {"dict_key": "string"},
@@ -64,13 +74,17 @@
         "subtype": "string",
         "desc": "multiline string of function"
         },
+        {"name": "func_ret_str",
+        "subtype": "string",
+        "desc": "String defining what a function returns within this system."
+        },
         {"name": "start_end_d",
         "subtype": "dict",
         "dict_keys": {"func_start": "int",
                      "func_end": "int"},
         "desc": "Dict mapping function names to definition's start and end line within file"
         },
-        {"name": "func_names_to_starts_and_ends",
+        {"name": "func_name_to_locs",
         "subtype": "dict",
         "dict_spec": {"func_name": "start_end_d"},
         "desc": "Dict mapping function names to definition's start and end line within file"
@@ -101,9 +115,19 @@
          "desc": "Keeping track of the layer in which we are operating for doc strings"
         },
         {
+        "name": "crt_var_list",
+         "subtype": "pass",
+         "desc": "Non-fixed data structure."
+        },
+        {
         "name": "max_num_layers",
          "subtype": "int",
          "desc": "Upper limit to the layers in which we are operating for doc strings"
+        },
+        {
+        "name": "variables_list",
+         "subtype": "list<var>",
+         "desc": "list of variables normally returned."
         },
         {
         "name": "docstr_l",
@@ -122,10 +146,19 @@
             "desc": "Dict mapping variables to their docstrings"
         },
         {
+            "name": "argsNret_d",
+            "subtype": "dict",
+            "dict_keys": {
+                "Args": "variables_list",
+                "Returns": "variables_list"
+            },
+            "desc": "Dict mapping 'args' and 'returns' to a list of variables in def"
+        },
+        {
             "name": "funcN2vars",
             "subtype": "dict",
-            "dict_spec": {"func_name": "list<var>"}, 
-            "desc": "Dict mapping function name to a list of variables in def"
+            "dict_spec": {"func_name": "argsNret_d"}, 
+            "desc": "Dict mapping function name to a dict holding variables"
         },
         {
             "name": "funcN2vars2docstr",

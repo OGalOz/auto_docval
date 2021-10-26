@@ -229,7 +229,8 @@ def import_all_types(types_cfg_json_fp):
             "string": {"subtype": "string", "desc": "standard python string"},
             "bool": {"subtype": "bool", "desc": "standard python bool"},
             "int": {"subtype": "int", "desc": "standard python int"},
-            "pass": {"subtype": "int", "desc": "Ignoring description."}
+            "pass": {"subtype": "int", "desc": "Ignoring description."},
+            "None": {"subtype": "None", "desc": "None type"}
         }
     for type_info_d in types_list:
         type_name = type_info_d["name"]
