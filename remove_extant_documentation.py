@@ -83,7 +83,6 @@ def get_ignore_lines(func_to_autodocd):
     
     
     
-
 # rets func_to_autodocd
 def check_if_funcs_autodocd(python_file_fp, func_name_to_locs):
 

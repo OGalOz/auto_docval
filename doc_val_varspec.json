@@ -29,6 +29,11 @@
             "desc": "Path to python file to document."
         },
         {
+            "name": "op_fp",
+            "subtype": "string",
+            "desc": "Path to output file"
+        },
+        {
             "name": "subtype",
             "subtype": "string",
             "desc": "String describing what the type of a variable is."
@@ -180,6 +185,28 @@
         "name": "variables_list",
          "subtype": "list<var>",
          "desc": "list of variables normally returned."
+        },
+        {
+            "name": "lines_to_ignore",
+            "subtype": "set",
+            "desc": "Holds line numbers which we won't write to output file."
+        },
+        {
+            "name": "doc_se_d",
+            "subtype": "dict",
+            "dict_keys": {
+                "doc_start": "int",
+                "doc_end": "int"
+            },
+            "desc": "small dict holding starting and ending points for a function's autodocs"
+        },
+        {
+            "name": "func_to_autodocd",
+            "subtype": "dict",
+            "dict_spec": {
+                "func_name": "doc_se_d"
+            },
+            "desc": "Holds location of auto documentation per function."
         },
         {
         "name": "docstr_l",
