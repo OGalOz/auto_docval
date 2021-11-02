@@ -2,3 +2,4 @@ trash
 test_doc_w_types.py
 __pycache__
 doct_*
+*.vim

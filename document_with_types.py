@@ -609,7 +609,8 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
                 else:
                     raise Exception("Cannot recognize subtype of docstr!")
 
-
+def ostop(inp):
+    raise Exception(f"Purposeful stop: {inp}")
 
 
         
