@@ -36,22 +36,6 @@ from validate_types import import_all_types
 
 # rets funcN2vars
 def get_func_name_to_vars_from_file(python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    Returns:
-        funcN2vars (dict): Dict mapping function name to a dict holding variables
-        -maps func_name -> argsNret_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
-            -keys:
-                'Args' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-                'Returns' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-    """
     func_name_to_locs = get_function_names_starts_and_ends(python_file_fp)
     #print(function_names_to_starts_and_ends)
     funcN2vars = get_func_name_to_variables(func_name_to_locs, 
@@ -62,56 +46,6 @@ def get_func_name_to_vars_from_file(python_file_fp):
 def create_documentation_args_returns_str(funcN2vars,
                                            type_spec_d,
                                            types_cfg_json_fp):
-    """
-    *DOCDONE
-    Args:
-        funcN2vars (dict): Dict mapping function name to a dict holding variables
-        -maps func_name -> argsNret_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
-            -keys:
-                'Args' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-                'Returns' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-        type_spec_d (dict): The dict that holds the information about all the variables.
-        -maps var -> spec_d
-            var (string): Name of a variable
-            spec_d (dict): The dict that holds the information about a single variable.
-            -keys:
-                'subtype' -> subtype (string), String describing what the type of a variable is.
-                'desc' -> desc (string), String describing a variable's meaning.
-            -optional keys:
-                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
-                -optional keys:
-                    '[regex]' -> string (string), standard python string
-                    '[less_than]' -> float (float), standard python float
-                    '[greater_than]' -> float (float), standard python float
-                    '[decimal_max]' -> int (int), standard python int
-        types_cfg_json_fp (string): Path to all type spec file.
-            Restriction: is_file=1
-    Returns:
-        funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.
-        -maps func_name -> var2docstr_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            var2docstr_d (dict): Dict mapping variables to their docstrings
-            -maps var -> docstrs_major_l
-                var (string): Name of a variable
-                docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
-                    docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string.
-    """
     """
     Description:
         
@@ -158,45 +92,6 @@ def create_documentation_args_returns_str(funcN2vars,
 def prepare_docstrs_l(var, type_spec_d, current_num_layer, 
                       max_num_layers=4, dict_key=None, list_bool=False,
                       sub_var_str_bool=False, optional_key_bool=False):
-    """
-    *DOCDONE
-    Args:
-        var (string): Name of a variable
-        type_spec_d (dict): The dict that holds the information about all the variables.
-        -maps var -> spec_d
-            var (string): Name of a variable
-            spec_d (dict): The dict that holds the information about a single variable.
-            -keys:
-                'subtype' -> subtype (string), String describing what the type of a variable is.
-                'desc' -> desc (string), String describing a variable's meaning.
-            -optional keys:
-                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
-                -optional keys:
-                    '[regex]' -> string (string), standard python string
-                    '[less_than]' -> float (float), standard python float
-                    '[greater_than]' -> float (float), standard python float
-                    '[decimal_max]' -> int (int), standard python int
-        current_num_layer (int): Keeping track of the layer in which we are operating for doc strings
-        max_num_layers (int): Upper limit to the layers in which we are operating for doc strings
-        dict_key (string): A key for a dict to add to doc str
-        list_bool (bool): Whether or not the current variable is wrapped in a list.
-        sub_var_str_bool (bool): Whether subtype of variable maps to another variable.
-        optional_key_bool (bool): Whether or not the current variable is an optional key
-    Returns:
-        crt_var_list (pass): Non-fixed data structure.
-    """
     """
     Description:
         Each variable that is an input to a function (or an output from a function)
@@ -353,39 +248,6 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
 
 # rets bool
 def check_var_against_type_spec_d(var, type_spec_d):
-    """
-    *DOCDONE
-    Args:
-        var (string): Name of a variable
-        type_spec_d (dict): The dict that holds the information about all the variables.
-        -maps var -> spec_d
-            var (string): Name of a variable
-            spec_d (dict): The dict that holds the information about a single variable.
-            -keys:
-                'subtype' -> subtype (string), String describing what the type of a variable is.
-                'desc' -> desc (string), String describing a variable's meaning.
-            -optional keys:
-                '[dict_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[optional_keys]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[dict_spec]' -> dict_keys_d (dict), The definition for the dict that holds dict keys
-                -maps dict_key -> string
-                    dict_key (string): A key for a dict to add to doc str
-                    string (string): standard python string
-                '[restrictions]' -> restrictions_d (dict), The dict that holds restrictions for various objects.
-                -optional keys:
-                    '[regex]' -> string (string), standard python string
-                    '[less_than]' -> float (float), standard python float
-                    '[greater_than]' -> float (float), standard python float
-                    '[decimal_max]' -> int (int), standard python int
-    Returns:
-        bool (bool): standard python bool
-    """
     # Returns True if good, False if bad
     if "list<" not in var:
         if var not in type_spec_d:
@@ -404,29 +266,6 @@ def check_var_against_type_spec_d(var, type_spec_d):
 
 # rets funcN2vars 
 def get_func_name_to_variables(func_name_to_locs, python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file
-        -maps func_name -> start_end_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            start_end_d (dict): Dict mapping function names to definition's start and end line within file
-            -keys:
-                'func_start' -> int (int), standard python int
-                'func_end' -> int (int), standard python int
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    Returns:
-        funcN2vars (dict): Dict mapping function name to a dict holding variables
-        -maps func_name -> argsNret_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            argsNret_d (dict): Dict mapping 'Args' and 'Returns' to a list of variables in def
-            -keys:
-                'Args' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-                'Returns' -> variables_list (list<var>), list of variables normally returned.
-                    var (string): Name of a variable
-    """
     """
     Description:
         
@@ -462,14 +301,6 @@ def get_func_name_to_variables(func_name_to_locs, python_file_fp):
 # rets variables_list
 def get_function_return_variables(func_ret_str):
     """
-    *DOCDONE
-    Args:
-        func_ret_str (string): String defining what a function returns within this system.
-    Returns:
-        variables_list (list<var>): list of variables normally returned.
-            var (string): Name of a variable
-    """
-    """
     Desc:
         func_ret_str has to have a specific format:
         must look like '# rets {X}'.
@@ -486,14 +317,6 @@ def get_function_return_variables(func_ret_str):
 
 # rets variables_list 
 def get_function_variables_from_func_string(func_string):
-    """
-    *DOCDONE
-    Args:
-        func_string (string): multiline string of function
-    Returns:
-        variables_list (list<var>): list of variables normally returned.
-            var (string): Name of a variable
-    """
     variables_list = []
     variables_str = "".join(func_string.split("(")[1:])
     variables_str = "".join(variables_str.split(")")[:-1])
@@ -509,20 +332,6 @@ def get_function_variables_from_func_string(func_string):
 
 # rets func_name_to_locs
 def get_function_names_starts_and_ends(python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    Returns:
-        func_name_to_locs (dict): Dict mapping function names to definition's start and end line within file
-        -maps func_name -> start_end_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            start_end_d (dict): Dict mapping function names to definition's start and end line within file
-            -keys:
-                'func_start' -> int (int), standard python int
-                'func_end' -> int (int), standard python int
-    """
 
     file_lines = open(python_file_fp).read().split("\n")
     file_len = len(file_lines)
@@ -559,21 +368,6 @@ def get_function_names_starts_and_ends(python_file_fp):
 
 # rets None 
 def add_docstrings_to_file(python_file_fp, funcN2vars2docstr): 
-    """
-    *DOCDONE
-    Args:
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-        funcN2vars2docstr (dict): Dict mapping function name to variables mapped to doc strings.
-        -maps func_name -> var2docstr_d
-            func_name (string): Name of function, no spaces and doesn't start with number
-            var2docstr_d (dict): Dict mapping variables to their docstrings
-            -maps var -> docstrs_major_l
-                var (string): Name of a variable
-                docstrs_major_l (list<docstr_l>): Outer list of layers of docstrings in sublists.
-                    docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string.
-    Returns:
-    """
     """
     Desc:
         We break out of adding documentation if the flag
@@ -637,15 +431,6 @@ def add_docstrings_to_file(python_file_fp, funcN2vars2docstr):
 
 
 def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines):
-    """
-    *DOCDONE
-    Args:
-        docstr_l (pass): Passing type for infinite recursion reasons, this is a list with subtype list or string.
-        spacer (string): Spaces which mark indentation level for doc strings
-        num_depth (int): Multiplier for spacers to show proper depth of variable
-        op_file_str_lines (list<string>): Output file in format list of strings, one string per line, no new-line symbol.
-            string (string): standard python string
-    """
     # docstr_l is a list in which each item is either a string or a docstring list
     # Every time this runs, it adds a line to the op_file_str_lines list.
     if num_depth >= 10:
@@ -668,46 +453,19 @@ def generate_docstr_from_docstr_l(docstr_l, spacer, num_depth, op_file_str_lines
                     raise Exception("Cannot recognize subtype of docstr!")
 
 def ostop(inp):
-    """
-    *DOCDONE
-    Args:
-        inp (pass): string or int, generally to print.
-    """
     raise Exception(f"Purposeful stop: {inp}")
 
 
         
 def test_3(types_cfg_json_fp, python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        types_cfg_json_fp (string): Path to all type spec file.
-            Restriction: is_file=1
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    """
 
     type_spec_d = import_all_types(types_cfg_json_fp)
 
 
 def test_2(python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    """
     get_functions_info_from_file(python_file_fp)
     
 def test_1(types_cfg_json_fp, python_file_fp):
-    """
-    *DOCDONE
-    Args:
-        types_cfg_json_fp (string): Path to all type spec file.
-            Restriction: is_file=1
-        python_file_fp (string): Path to python file to document.
-            Restriction: is_file=1
-    """
     type_spec_d = import_all_types(types_cfg_json_fp)
     funcN2vars = get_func_name_to_vars_from_file(python_file_fp)
     funcN2vars2docstr = create_documentation_args_returns_str(funcN2vars,

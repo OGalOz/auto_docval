@@ -209,7 +209,10 @@ def validate_atomic_type(subtype_str, obj, obj_name, obj_spec_d):
             check_int_restrictions(obj, obj_spec_d["restrictions"], obj_name)
     elif subtype_str == "bool":
         if not isinstance(obj, bool):
-            raise Exception(f"Int object not int: {obj_name}, instead: " + str(type(obj)))
+            raise Exception(f"Bool object not bool: {obj_name}, instead: " + str(type(obj)))
+    elif subtype_str == "set":
+        if not isinstance(obj, set):
+            raise Exception(f"set object not set: {obj_name}, instead: " + str(type(obj)))
     elif subtype_str == "pass":
         # We don't look into this one.
         pass
@@ -366,6 +369,7 @@ def import_all_types(types_cfg_json_fp):
             "string": {"subtype": "string", "desc": "standard python string"},
             "bool": {"subtype": "bool", "desc": "standard python bool"},
             "int": {"subtype": "int", "desc": "standard python int"},
+            "set": {"subtype": "set", "desc": "standard python set"},
             "None": {"subtype": "None", "desc": "None type"},
             "pass": {"subtype": "None", "desc": "Ignoring description."}
         }

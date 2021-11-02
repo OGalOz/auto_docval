@@ -36,13 +36,53 @@ from document_with_types import get_function_names_starts_and_ends, ostop
 
 
 def remove_autodocs_from_file(python_file_fp):
-    
+    logging.basicConfig(level=logging.DEBUG) 
+    op_fp = os.path.join(os.getcwd(), "undoct_" + os.path.basename(python_file_fp))
+    if os.path.exists(op_fp):
+        raise Exception("Output file path already exists at {op_fp}.")
     func_name_to_locs = get_function_names_starts_and_ends(python_file_fp)
     func_to_autodocd = check_if_funcs_autodocd(python_file_fp, func_name_to_locs) 
-    print(func_to_autodocd)
+    lines_to_ignore = get_ignore_lines(func_to_autodocd)
+    output_file_without_given_lines(python_file_fp, lines_to_ignore, op_fp)
+
     
     #ostop("39")
     return None
+
+
+def output_file_without_given_lines(python_file_fp, lines_to_ignore, op_fp):
+
+    with open(python_file_fp, 'r') as f:
+        split_file = f.read().split('\n')
+
+    op_FH = open(op_fp, 'w')
+    
+    for i in range(len(split_file)):
+        if i not in lines_to_ignore:
+            crt_line = split_file[i]
+            op_FH.write(crt_line + "\n")
+
+    op_FH.close()
+
+    logging.info(f"Wrote file to {op_fp}.")
+
+
+def get_ignore_lines(func_to_autodocd):
+    """
+    Description:
+    """
+    lines_to_ignore = set()
+
+    for func_name in func_to_autodocd.keys():
+        doc_se_d = func_to_autodocd[func_name]
+        for i in range(doc_se_d["doc_start"], doc_se_d["doc_end"] + 1):
+            lines_to_ignore.add(i)
+
+    return lines_to_ignore
+    
+    
+    
+    
 
 # rets func_to_autodocd
 def check_if_funcs_autodocd(python_file_fp, func_name_to_locs):
