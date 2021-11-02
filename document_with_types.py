@@ -280,7 +280,7 @@ def prepare_docstrs_l(var, type_spec_d, current_num_layer,
             if not check_var_against_type_spec_d(v, type_spec_d):
                 raise Exception(f"Dict spec value {v} not in type_spec_d.")
             layer_2.append(prepare_docstrs_l(k, type_spec_d, current_num_layer+1, max_num_layers=max_num_layers))
-            if "list" not in v:
+            if "list<" not in v:
                 layer_2.append(prepare_docstrs_l(v, type_spec_d, current_num_layer + 1, max_num_layers=max_num_layers))
             else:
                 list_subtype = (v.split("<")[1]).split(">")[0]
